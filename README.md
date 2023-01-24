@@ -2,6 +2,24 @@
 
 A high-performance, concurrent, content-addressable disk cache, with only sync APIs.
 
+## Notes
+
+This is a fork of the `cacache` crate here: https://github.com/zkat/cacache-rs,
+which removes all async code and dependencies, and makes the sync APIs the
+primary usage (no need for `_sync` suffixes).
+
+The motivation is pretty simple -- in another project I was using `cacache`,
+where I only relied on the sync API. I seem to still be paying the cost of
+having async-related dependencies, so this fork is mostly for people who are
+definitely only going to be using the sync APIs. I'm not sure how translatable
+these savings are across other projects, but compile times for debug builds
+dropped by ~33%.
+
+This fork is likely going to be minimally supported -- I don't see much needing
+to change about the sync implementations here. If you want to see changes here,
+you should probably push those to the original project (and consider supporting
+it as well).
+
 ## Example
 
 ```rust
@@ -32,7 +50,7 @@ Minimum supported Rust version is `1.43.0`.
 
 ## Documentation
 
-- [API Docs](https://docs.rs/cacache)
+- [API Docs](https://docs.rs/cacache-sync)
 
 ## Features
 
