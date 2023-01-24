@@ -68,10 +68,7 @@ Once the maintainers get involved, they will follow a documented series of steps
 You may get in touch with the maintainer team through any of the following methods:
 
   * Through email:
-    * [kzm@sykosomatic.org](mailto:coc@zkat.tech) (Kat Marchán)
-
-  * Through Twitter:
-    * [@maybekatz](https://twitter.com/maybekatz) (Kat Marchán)
+    * [kade@kaderobertson.dev](mailto:kade@kaderobertson.dev) (Kade Robertson)
 
 ### Further Enforcement
 

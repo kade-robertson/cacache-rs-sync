@@ -1,12 +1,12 @@
 [package]
-name = "cacache"
+name = "cacache-sync"
 version = "10.0.2-alpha.0"
-authors = ["Kat Marchán <kzm@zkat.tech>"]
+authors = ["Kade Robertson <kade@kaderobertson.dev>", "Kat Marchán <kzm@zkat.tech>"]
 edition = "2021"
-description = "Content-addressable, key-value, high-performance, on-disk cache."
+description = "Synchronous, content-addressable, key-value, high-performance, on-disk cache."
 license = "Apache-2.0"
-repository = "https://github.com/zkat/cacache-rs"
-homepage = "https://github.com/zkat/cacache-rs"
+repository = "https://github.com/kade-robertson/cacache-rs-sync"
+homepage = "https://github.com/kade-robertson/cacache-rs-sync"
 readme = "README.md"
 categories = [
     "caching",
@@ -16,23 +16,19 @@ categories = [
 [dependencies]
 ssri = "7.0.0"
 hex = "0.4.3"
-tempfile = "3.2.0"
-sha-1 = "0.9.8"
-sha2 = "0.9.8"
-digest = "0.9.0"
-serde_json = "1.0.68"
-serde = "1.0.130"
-serde_derive = "1.0.130"
+tempfile = "3.3.0"
+sha-1 = "0.10.1"
+sha2 = "0.10.6"
+digest = "0.10.6"
+serde_json = "1.0.91"
+serde = { version = "1.0.152", features = ["derive"] }
 walkdir = "2.3.2"
-either = "1.6.1"
-async-std = { version = "1.10.0", features = ["unstable"] }
-thiserror = "1.0.29"
-futures = "0.3.17"
+either = "1.8.0"
+thiserror = "1.0.38"
 memmap2 = "0.5"
 
 [dev-dependencies]
-async-attributes = "1.1.2"
-criterion = "0.3.5"
+criterion = "0.4.0"
 
 [[bench]]
 name = "benchmarks"

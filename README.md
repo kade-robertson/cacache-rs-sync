@@ -1,26 +1,42 @@
-# cacache ![CI](https://github.com/zkat/cacache-rs/workflows/CI/badge.svg) ![crates.io](https://img.shields.io/crates/v/cacache.svg)
+# cacache-sync ![CI](https://github.com/kade-robertson/cacache-rs-sync/workflows/CI/badge.svg) ![crates.io](https://img.shields.io/crates/v/cacache-sync.svg)
 
-A high-performance, concurrent, content-addressable disk cache, optimized for async APIs.
+A high-performance, concurrent, content-addressable disk cache, with only sync APIs.
+
+## Notes
+
+This is a fork of the `cacache` crate here: https://github.com/zkat/cacache-rs,
+which removes all async code and dependencies, and makes the sync APIs the
+primary usage (no need for `_sync` suffixes).
+
+The motivation is pretty simple -- in another project I was using `cacache`,
+where I only relied on the sync API. I seem to still be paying the cost of
+having async-related dependencies, so this fork is mostly for people who are
+definitely only going to be using the sync APIs. I'm not sure how translatable
+these savings are across other projects, but compile times for debug builds
+dropped by ~33%.
+
+This fork is likely going to be minimally supported -- I don't see much needing
+to change about the sync implementations here. If you want to see changes here,
+you should probably push those to the original project (and consider supporting
+it as well).
 
 ## Example
 
 ```rust
-use cacache;
-use async_attributes;
+use cacache_sync;
 
-#[async_attributes::main]
-async fn main() -> Result<(), cacache::Error> {
+async fn main() -> Result<(), cacache_sync::Error> {
     let dir = String::from("./my-cache");
 
     // Write some data!
-    cacache::write(&dir, "key", b"my-async-data").await?;
+    cacache_sync::write(&dir, "key", b"my-async-data")?;
 
     // Get the data back!
-    let data = cacache::read(&dir, "key").await?;
+    let data = cacache_sync::read(&dir, "key")?;
     assert_eq!(data, b"my-async-data");
 
     // Clean up the data!
-    cacache::rm::all(&dir).await?;
+    cacache_sync::clear(&dir)?;
 }
 ```
 
@@ -28,17 +44,17 @@ async fn main() -> Result<(), cacache::Error> {
 
 Using [`cargo-edit`](https://crates.io/crates/cargo-edit)
 
-`$ cargo add cacache`
+`$ cargo add cacache-sync`
 
 Minimum supported Rust version is `1.43.0`.
 
 ## Documentation
 
-- [API Docs](https://docs.rs/cacache)
+- [API Docs](https://docs.rs/cacache-sync)
 
 ## Features
 
-- First-class async support, using [`async-std`](https://crates.io/crates/async-std) as its runtime. Sync APIs are available but secondary
+- Sync APIs are the primary API.
 - `std::fs`-style API
 - Extraction by key or by content address (shasum, etc)
 - [Subresource Integrity](#integrity) web standard support
@@ -47,7 +63,6 @@ Minimum supported Rust version is `1.43.0`.
 - Atomic content writes even for large data
 - Fault tolerance (immune to corruption, partial writes, process races, etc)
 - Consistency guarantees on read and write (full data verification)
-- Lockless, high-concurrency cache access
 - Really helpful, contextual error messages
 - Large file support
 - Pretty darn fast

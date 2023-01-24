@@ -1,4 +1,4 @@
-# `cacache` Release Changelog
+# `cacache-sync` Release Changelog
 
 <a name="10.0.1"></a>
 ## 10.0.1 (2022-02-25)
