@@ -2,101 +2,11 @@
 use std::fs;
 use std::path::Path;
 
-use async_std::fs as afs;
-
 use ssri::Integrity;
 
 use crate::content::rm;
 use crate::errors::{Internal, Result};
 use crate::index;
-
-/// Removes an individual index metadata entry. The associated content will be
-/// left in the cache.
-///
-/// ## Example
-/// ```no_run
-/// use async_std::prelude::*;
-/// use async_attributes;
-///
-/// #[async_attributes::main]
-/// async fn main() -> cacache::Result<()> {
-///     let sri = cacache::write("./my-cache", "my-key", b"hello").await?;
-///
-///     cacache::remove("./my-cache", "my-key").await?;
-///
-///     // This fails:
-///     cacache::read("./my-cache", "my-key").await?;
-///
-///     // But this succeeds:
-///     cacache::read_hash("./my-cache", &sri).await?;
-///
-///     Ok(())
-/// }
-/// ```
-pub async fn remove<P, K>(cache: P, key: K) -> Result<()>
-where
-    P: AsRef<Path>,
-    K: AsRef<str>,
-{
-    index::delete_async(cache.as_ref(), key.as_ref()).await
-}
-
-/// Removes an individual content entry. Any index entries pointing to this
-/// content will become invalidated.
-///
-/// ## Example
-/// ```no_run
-/// use async_std::prelude::*;
-/// use async_attributes;
-///
-/// #[async_attributes::main]
-/// async fn main() -> cacache::Result<()> {
-///     let sri = cacache::write("./my-cache", "my-key", b"hello").await?;
-///
-///     cacache::remove_hash("./my-cache", &sri).await?;
-///
-///     // These fail:
-///     cacache::read("./my-cache", "my-key").await?;
-///     cacache::read_hash("./my-cache", &sri).await?;
-///
-///     // But this succeeds:
-///     cacache::metadata("./my-cache", "my-key").await?;
-///
-///     Ok(())
-/// }
-/// ```
-pub async fn remove_hash<P: AsRef<Path>>(cache: P, sri: &Integrity) -> Result<()> {
-    rm::rm_async(cache.as_ref(), sri).await
-}
-
-/// Removes entire contents of the cache, including temporary files, the entry
-/// index, and all content data.
-///
-/// ## Example
-/// ```no_run
-/// use async_std::prelude::*;
-/// use async_attributes;
-///
-/// #[async_attributes::main]
-/// async fn main() -> cacache::Result<()> {
-///     let sri = cacache::write("./my-cache", "my-key", b"hello").await?;
-///
-///     cacache::clear("./my-cache").await?;
-///
-///     // These all fail:
-///     cacache::read("./my-cache", "my-key").await?;
-///     cacache::metadata("./my-cache", "my-key").await?;
-///     cacache::read_hash("./my-cache", &sri).await?;
-///
-///     Ok(())
-/// }
-/// ```
-pub async fn clear<P: AsRef<Path>>(cache: P) -> Result<()> {
-    for entry in (cache.as_ref().read_dir().to_internal()?).flatten() {
-        afs::remove_dir_all(entry.path()).await.to_internal()?;
-    }
-    Ok(())
-}
 
 /// Removes an individual index entry synchronously. The associated content
 /// will be left in the cache.
@@ -182,58 +92,6 @@ pub fn clear_sync<P: AsRef<Path>>(cache: P) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use async_std::task;
-
-    #[test]
-    fn test_remove() {
-        task::block_on(async {
-            let tmp = tempfile::tempdir().unwrap();
-            let dir = tmp.path().to_owned();
-            let sri = crate::write(&dir, "key", b"my-data").await.unwrap();
-
-            crate::remove(&dir, "key").await.unwrap();
-
-            let entry = crate::metadata(&dir, "key").await.unwrap();
-            assert_eq!(entry, None);
-
-            let data_exists = crate::exists(&dir, &sri).await;
-            assert!(data_exists);
-        });
-    }
-
-    #[test]
-    fn test_remove_data() {
-        task::block_on(async {
-            let tmp = tempfile::tempdir().unwrap();
-            let dir = tmp.path().to_owned();
-            let sri = crate::write(&dir, "key", b"my-data").await.unwrap();
-
-            crate::remove_hash(&dir, &sri).await.unwrap();
-
-            let entry = crate::metadata(&dir, "key").await.unwrap();
-            assert!(entry.is_some());
-
-            let data_exists = crate::exists(&dir, &sri).await;
-            assert!(!data_exists);
-        });
-    }
-
-    #[test]
-    fn test_clear() {
-        task::block_on(async {
-            let tmp = tempfile::tempdir().unwrap();
-            let dir = tmp.path().to_owned();
-            let sri = crate::write(&dir, "key", b"my-data").await.unwrap();
-
-            crate::clear(&dir).await.unwrap();
-
-            let entry = crate::metadata(&dir, "key").await.unwrap();
-            assert!(entry.is_none());
-
-            let data_exists = crate::exists(&dir, &sri).await;
-            assert!(!data_exists);
-        });
-    }
 
     #[test]
     fn test_remove_sync() {
