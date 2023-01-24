@@ -1,6 +1,6 @@
 [package]
 name = "cacache-sync"
-version = "10.0.2-alpha.0"
+version = "11.0.0"
 authors = ["Kade Robertson <kade@kaderobertson.dev>", "Kat Marchán <kzm@zkat.tech>"]
 edition = "2021"
 description = "Synchronous, content-addressable, key-value, high-performance, on-disk cache."
