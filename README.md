@@ -1,26 +1,24 @@
-# cacache ![CI](https://github.com/zkat/cacache-rs/workflows/CI/badge.svg) ![crates.io](https://img.shields.io/crates/v/cacache.svg)
+# cacache-sync ![CI](https://github.com/kade-robertson/cacache-rs-sync/workflows/CI/badge.svg) ![crates.io](https://img.shields.io/crates/v/cacache-sync.svg)
 
-A high-performance, concurrent, content-addressable disk cache, optimized for async APIs.
+A high-performance, concurrent, content-addressable disk cache, with only sync APIs.
 
 ## Example
 
 ```rust
 use cacache;
-use async_attributes;
 
-#[async_attributes::main]
 async fn main() -> Result<(), cacache::Error> {
     let dir = String::from("./my-cache");
 
     // Write some data!
-    cacache::write(&dir, "key", b"my-async-data").await?;
+    cacache::write_sync(&dir, "key", b"my-async-data").await?;
 
     // Get the data back!
-    let data = cacache::read(&dir, "key").await?;
+    let data = cacache::read_sync(&dir, "key").await?;
     assert_eq!(data, b"my-async-data");
 
     // Clean up the data!
-    cacache::rm::all(&dir).await?;
+    cacache::clear_sync(&dir).await?;
 }
 ```
 
@@ -38,7 +36,7 @@ Minimum supported Rust version is `1.43.0`.
 
 ## Features
 
-- First-class async support, using [`async-std`](https://crates.io/crates/async-std) as its runtime. Sync APIs are available but secondary
+- Sync APIs are the primary API.
 - `std::fs`-style API
 - Extraction by key or by content address (shasum, etc)
 - [Subresource Integrity](#integrity) web standard support
@@ -47,7 +45,6 @@ Minimum supported Rust version is `1.43.0`.
 - Atomic content writes even for large data
 - Fault tolerance (immune to corruption, partial writes, process races, etc)
 - Consistency guarantees on read and write (full data verification)
-- Lockless, high-concurrency cache access
 - Really helpful, contextual error messages
 - Large file support
 - Pretty darn fast

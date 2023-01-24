@@ -42,9 +42,9 @@ fn read_hash_sync(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let cache = tmp.path().to_owned();
     let data = b"hello world".to_vec();
-    let sri = cacache::write_sync(&cache, "hello", data).unwrap();
+    let sri = cacache_sync::write_sync(&cache, "hello", data).unwrap();
     c.bench_function("get::data_hash_sync", move |b| {
-        b.iter(|| cacache::read_hash_sync(black_box(&cache), black_box(&sri)).unwrap())
+        b.iter(|| cacache_sync::read_hash_sync(black_box(&cache), black_box(&sri)).unwrap())
     });
 }
 
@@ -57,12 +57,12 @@ fn read_hash_many_sync(c: &mut Criterion) {
         .collect();
     let sris: Vec<_> = data
         .iter()
-        .map(|datum| cacache::write_sync(&cache, "hello", datum).unwrap())
+        .map(|datum| cacache_sync::write_sync(&cache, "hello", datum).unwrap())
         .collect();
     c.bench_function("get::data_hash_many_sync", move |b| {
         b.iter(|| {
             for sri in sris.iter() {
-                cacache::read_hash_sync(black_box(&cache), black_box(sri)).unwrap();
+                cacache_sync::read_hash_sync(black_box(&cache), black_box(sri)).unwrap();
             }
         })
     });
@@ -72,9 +72,11 @@ fn read_sync(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let cache = tmp.path().to_owned();
     let data = b"hello world".to_vec();
-    cacache::write_sync(&cache, "hello", data).unwrap();
+    cacache_sync::write_sync(&cache, "hello", data).unwrap();
     c.bench_function("get::data_sync", move |b| {
-        b.iter(|| cacache::read_sync(black_box(&cache), black_box(String::from("hello"))).unwrap())
+        b.iter(|| {
+            cacache_sync::read_sync(black_box(&cache), black_box(String::from("hello"))).unwrap()
+        })
     });
 }
 
@@ -82,9 +84,9 @@ fn read_hash_sync_big_data(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let cache = tmp.path().to_owned();
     let data = vec![1; 1024 * 1024 * 5];
-    let sri = cacache::write_sync(&cache, "hello", data).unwrap();
+    let sri = cacache_sync::write_sync(&cache, "hello", data).unwrap();
     c.bench_function("get_hash_big_data", move |b| {
-        b.iter(|| cacache::read_hash_sync(black_box(&cache), black_box(&sri)).unwrap())
+        b.iter(|| cacache_sync::read_hash_sync(black_box(&cache), black_box(&sri)).unwrap())
     });
 }
 
