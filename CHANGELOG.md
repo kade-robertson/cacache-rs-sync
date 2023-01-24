@@ -1,5 +1,18 @@
 # `cacache-sync` Release Changelog
 
+<a name="v11.0.0"></a>
+## 11.0.0 (2023-01-24)
+
+### Bug Fixes
+
+* **write:** set tmpfile length in async writer (#35) ([6d84ff0a](https://github.com/kade-robertson/cacache-rs-sync/commit/6d84ff0aed53aea727b32f6b3d16ee0d045aa0e4))
+    * **BREAKING CHANGE**: This commit also bumps the MSRV for cacache to 1.66.1.
+    
+### Refactor
+
+* make crate sync-only (#1) ([f0512f4f](https://github.com/kade-robertson/cacache-rs-sync/commit/f0512f4f3c703457eea9d7b43c0b32c06dbc8b39))
+    * **BREAKING CHANGE**: This commit effectively replaces the async API with the sync API and removes async as an option entirely.
+
 <a name="10.0.1"></a>
 ## 10.0.1 (2022-02-25)
 
