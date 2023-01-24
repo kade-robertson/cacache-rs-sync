@@ -5,20 +5,20 @@ A high-performance, concurrent, content-addressable disk cache, with only sync A
 ## Example
 
 ```rust
-use cacache;
+use cacache_sync;
 
-async fn main() -> Result<(), cacache::Error> {
+async fn main() -> Result<(), cacache_sync::Error> {
     let dir = String::from("./my-cache");
 
     // Write some data!
-    cacache::write_sync(&dir, "key", b"my-async-data").await?;
+    cacache_sync::write(&dir, "key", b"my-async-data")?;
 
     // Get the data back!
-    let data = cacache::read_sync(&dir, "key").await?;
+    let data = cacache_sync::read(&dir, "key")?;
     assert_eq!(data, b"my-async-data");
 
     // Clean up the data!
-    cacache::clear_sync(&dir).await?;
+    cacache_sync::clear(&dir)?;
 }
 ```
 
@@ -26,7 +26,7 @@ async fn main() -> Result<(), cacache::Error> {
 
 Using [`cargo-edit`](https://crates.io/crates/cargo-edit)
 
-`$ cargo add cacache`
+`$ cargo add cacache-sync`
 
 Minimum supported Rust version is `1.43.0`.
 

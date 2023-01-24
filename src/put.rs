@@ -15,18 +15,18 @@ use crate::index;
 /// ```no_run
 /// use std::io::Read;
 ///
-/// fn main() -> cacache::Result<()> {
-///     let data = cacache::write_sync("./my-cache", "my-key", b"hello")?;
+/// fn main() -> cacache_sync::Result<()> {
+///     let data = cacache_sync::write("./my-cache", "my-key", b"hello")?;
 ///     Ok(())
 /// }
 /// ```
-pub fn write_sync<P, D, K>(cache: P, key: K, data: D) -> Result<Integrity>
+pub fn write<P, D, K>(cache: P, key: K, data: D) -> Result<Integrity>
 where
     P: AsRef<Path>,
     D: AsRef<[u8]>,
     K: AsRef<str>,
 {
-    let mut writer = SyncWriter::create(cache.as_ref(), key.as_ref())?;
+    let mut writer = Writer::create(cache.as_ref(), key.as_ref())?;
     writer.write_all(data.as_ref()).with_context(|| {
         format!(
             "Failed to write to cache data for key {} for cache at {:?}",
@@ -44,12 +44,12 @@ where
 /// ```no_run
 /// use std::io::Read;
 ///
-/// fn main() -> cacache::Result<()> {
-///     let data = cacache::write_hash_sync("./my-cache", b"hello")?;
+/// fn main() -> cacache_sync::Result<()> {
+///     let data = cacache_sync::write_hash("./my-cache", b"hello")?;
 ///     Ok(())
 /// }
 /// ```
-pub fn write_hash_sync<P, D>(cache: P, data: D) -> Result<Integrity>
+pub fn write_hash<P, D>(cache: P, data: D) -> Result<Integrity>
 where
     P: AsRef<Path>,
     D: AsRef<[u8]>,
@@ -57,7 +57,7 @@ where
     let mut writer = WriteOpts::new()
         .algorithm(Algorithm::Sha256)
         .size(data.as_ref().len())
-        .open_hash_sync(cache.as_ref())?;
+        .open_hash(cache.as_ref())?;
     writer.write_all(data.as_ref()).with_context(|| {
         format!(
             "Failed to write to cache data for cache at {:?}",
@@ -85,12 +85,12 @@ impl WriteOpts {
     }
 
     /// Opens the file handle for writing synchronously, returning a SyncWriter instance.
-    pub fn open_sync<P, K>(self, cache: P, key: K) -> Result<SyncWriter>
+    pub fn open<P, K>(self, cache: P, key: K) -> Result<Writer>
     where
         P: AsRef<Path>,
         K: AsRef<str>,
     {
-        Ok(SyncWriter {
+        Ok(Writer {
             cache: cache.as_ref().to_path_buf(),
             key: Some(String::from(key.as_ref())),
             written: 0,
@@ -104,11 +104,11 @@ impl WriteOpts {
     }
 
     /// Opens the file handle for writing, without a key returning an SyncWriter instance.
-    pub fn open_hash_sync<P>(self, cache: P) -> Result<SyncWriter>
+    pub fn open_hash<P>(self, cache: P) -> Result<Writer>
     where
         P: AsRef<Path>,
     {
-        Ok(SyncWriter {
+        Ok(Writer {
             cache: cache.as_ref().to_path_buf(),
             key: None,
             written: 0,
@@ -158,7 +158,7 @@ impl WriteOpts {
 }
 
 /// A reference to an open file writing to the cache.
-pub struct SyncWriter {
+pub struct Writer {
     cache: PathBuf,
     key: Option<String>,
     written: usize,
@@ -166,7 +166,7 @@ pub struct SyncWriter {
     opts: WriteOpts,
 }
 
-impl Write for SyncWriter {
+impl Write for Writer {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         let written = self.writer.write(buf)?;
         self.written += written;
@@ -177,29 +177,29 @@ impl Write for SyncWriter {
     }
 }
 
-impl SyncWriter {
+impl Writer {
     /// Creates a new writable file handle into the cache.
     ///
     /// ## Example
     /// ```no_run
     /// use std::io::prelude::*;
     ///
-    /// fn main() -> cacache::Result<()> {
-    ///     let mut fd = cacache::SyncWriter::create("./my-cache", "my-key")?;
+    /// fn main() -> cacache_sync::Result<()> {
+    ///     let mut fd = cacache_sync::Writer::create("./my-cache", "my-key")?;
     ///     fd.write_all(b"hello world").expect("Failed to write to cache");
     ///     // Data is not saved into the cache until you commit it.
     ///     fd.commit()?;
     ///     Ok(())
     /// }
     /// ```
-    pub fn create<P, K>(cache: P, key: K) -> Result<SyncWriter>
+    pub fn create<P, K>(cache: P, key: K) -> Result<Writer>
     where
         P: AsRef<Path>,
         K: AsRef<str>,
     {
         WriteOpts::new()
             .algorithm(Algorithm::Sha256)
-            .open_sync(cache.as_ref(), key.as_ref())
+            .open(cache.as_ref(), key.as_ref())
     }
 
     /// Closes the Writer handle and writes content and index entries. Also
@@ -233,22 +233,22 @@ impl SyncWriter {
 mod tests {
 
     #[test]
-    fn round_trip_sync() {
+    fn round_trip() {
         let tmp = tempfile::tempdir().unwrap();
         let dir = tmp.path().to_owned();
-        crate::write_sync(&dir, "hello", b"hello").unwrap();
-        let data = crate::read_sync(&dir, "hello").unwrap();
+        crate::write(&dir, "hello", b"hello").unwrap();
+        let data = crate::read(&dir, "hello").unwrap();
         assert_eq!(data, b"hello");
     }
 
     #[test]
-    fn hash_write_sync() {
+    fn hash_write() {
         let tmp = tempfile::tempdir().unwrap();
         let dir = tmp.path().to_owned();
         let original = format!("hello world{}", 5);
-        let integrity = crate::write_hash_sync(&dir, &original)
+        let integrity = crate::write_hash(&dir, &original)
             .expect("should be able to write a hash synchronously");
-        let bytes = crate::read_hash_sync(&dir, &integrity)
+        let bytes = crate::read_hash(&dir, &integrity)
             .expect("should be able to read the data we just wrote");
         let result =
             String::from_utf8(bytes).expect("we wrote valid utf8 but did not read valid utf8 back");

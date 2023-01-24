@@ -5,7 +5,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 const NUM_REPEATS: usize = 10;
 
-fn baseline_read_sync(c: &mut Criterion) {
+fn baseline_read(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let path = tmp.path().join("test_file");
     let data = b"hello world";
@@ -17,7 +17,7 @@ fn baseline_read_sync(c: &mut Criterion) {
     });
 }
 
-fn baseline_read_many_sync(c: &mut Criterion) {
+fn baseline_read_many(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let paths: Vec<_> = (0..)
         .take(NUM_REPEATS)
@@ -38,17 +38,17 @@ fn baseline_read_many_sync(c: &mut Criterion) {
     });
 }
 
-fn read_hash_sync(c: &mut Criterion) {
+fn read_hash(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let cache = tmp.path().to_owned();
     let data = b"hello world".to_vec();
-    let sri = cacache_sync::write_sync(&cache, "hello", data).unwrap();
+    let sri = cacache_sync::write(&cache, "hello", data).unwrap();
     c.bench_function("get::data_hash_sync", move |b| {
-        b.iter(|| cacache_sync::read_hash_sync(black_box(&cache), black_box(&sri)).unwrap())
+        b.iter(|| cacache_sync::read_hash(black_box(&cache), black_box(&sri)).unwrap())
     });
 }
 
-fn read_hash_many_sync(c: &mut Criterion) {
+fn read_hash_many(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let cache = tmp.path().to_owned();
     let data: Vec<_> = (0..)
@@ -57,46 +57,44 @@ fn read_hash_many_sync(c: &mut Criterion) {
         .collect();
     let sris: Vec<_> = data
         .iter()
-        .map(|datum| cacache_sync::write_sync(&cache, "hello", datum).unwrap())
+        .map(|datum| cacache_sync::write(&cache, "hello", datum).unwrap())
         .collect();
     c.bench_function("get::data_hash_many_sync", move |b| {
         b.iter(|| {
             for sri in sris.iter() {
-                cacache_sync::read_hash_sync(black_box(&cache), black_box(sri)).unwrap();
+                cacache_sync::read_hash(black_box(&cache), black_box(sri)).unwrap();
             }
         })
     });
 }
 
-fn read_sync(c: &mut Criterion) {
+fn read(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let cache = tmp.path().to_owned();
     let data = b"hello world".to_vec();
-    cacache_sync::write_sync(&cache, "hello", data).unwrap();
+    cacache_sync::write(&cache, "hello", data).unwrap();
     c.bench_function("get::data_sync", move |b| {
-        b.iter(|| {
-            cacache_sync::read_sync(black_box(&cache), black_box(String::from("hello"))).unwrap()
-        })
+        b.iter(|| cacache_sync::read(black_box(&cache), black_box(String::from("hello"))).unwrap())
     });
 }
 
-fn read_hash_sync_big_data(c: &mut Criterion) {
+fn read_hash_big_data(c: &mut Criterion) {
     let tmp = tempfile::tempdir().unwrap();
     let cache = tmp.path().to_owned();
     let data = vec![1; 1024 * 1024 * 5];
-    let sri = cacache_sync::write_sync(&cache, "hello", data).unwrap();
+    let sri = cacache_sync::write(&cache, "hello", data).unwrap();
     c.bench_function("get_hash_big_data", move |b| {
-        b.iter(|| cacache_sync::read_hash_sync(black_box(&cache), black_box(&sri)).unwrap())
+        b.iter(|| cacache_sync::read_hash(black_box(&cache), black_box(&sri)).unwrap())
     });
 }
 
 criterion_group!(
     benches,
-    baseline_read_sync,
-    baseline_read_many_sync,
-    read_hash_sync,
-    read_hash_many_sync,
-    read_sync,
-    read_hash_sync_big_data
+    baseline_read,
+    baseline_read_many,
+    read_hash,
+    read_hash_many,
+    read,
+    read_hash_big_data
 );
 criterion_main!(benches);
