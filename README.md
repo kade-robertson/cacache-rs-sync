@@ -46,7 +46,7 @@ Using [`cargo-edit`](https://crates.io/crates/cargo-edit)
 
 `$ cargo add cacache-sync`
 
-Minimum supported Rust version is `1.43.0`.
+Minimum supported Rust version is `1.66.1`.
 
 ## Documentation
 
