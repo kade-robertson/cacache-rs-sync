@@ -1,3 +1,4 @@
+# DEPRECATED, JUST USE [`cacache`](https://crates.io/crates/cacache)
 # cacache-sync ![CI](https://github.com/kade-robertson/cacache-rs-sync/workflows/CI/badge.svg) ![crates.io](https://img.shields.io/crates/v/cacache-sync.svg)
 
 A high-performance, concurrent, content-addressable disk cache, with only sync APIs.
